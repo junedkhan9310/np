@@ -9,6 +9,7 @@ import {
   setDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+//this is my firbase key i didn't know how to hide this but i beliew it won't cause a problem since i have security implemented in rules of my firebase  console
 const firebaseConfig = {
     apiKey: "AIzaSyBbASBEqP1KltINK8mA-cMguudm3A6hTfA",
     authDomain: "trial-8f3cb.firebaseapp.com",
