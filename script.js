@@ -192,10 +192,6 @@ window.onload = async function () {
   await fetchBooks();
   document.getElementById("notepad").value = books[currentBook];
 
-  // Automatically copy content to clipboard on first load
-  if (books[currentBook].trim() !== "") {
-    copyToClipboard(true);
-  }
 
   isInitialLoad = false;
 };
