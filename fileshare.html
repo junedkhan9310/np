@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase File Upload & Download</title>
+  <script type="module">
+    // Firebase imports (modular)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      listAll,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbASBEqP1KltINK8mA-cMguudm3A6hTfA",
+      authDomain: "trial-8f3cb.firebaseapp.com",
+      projectId: "trial-8f3cb",
+      storageBucket: "trial-8f3cb.appspot.com",
+      messagingSenderId: "518428421959",
+      appId: "1:518428421959:web:11cb84c3a4e49065c6e662",
+      measurementId: "G-DB8QGLM8FD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+
+    // Upload file
+    async function handleUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileRef = ref(storage, 'uploads/' + file.name);
+      await uploadBytes(fileRef, file);
+      alert("Uploaded!");
+      loadFileList();
+    }
+
+    // List and show download links
+    async function loadFileList() {
+      const listRef = ref(storage, 'uploads');
+      const result = await listAll(listRef);
+      const container = document.getElementById("files");
+      container.innerHTML = "";
+
+      for (const itemRef of result.items) {
+        const url = await getDownloadURL(itemRef);
+        const link = document.createElement("a");
+        link.href = url;
+        link.innerText = `📁 ${itemRef.name}`;
+        link.target = "_blank";
+        link.className = "file-link";
+        container.appendChild(link);
+        container.appendChild(document.createElement("br"));
+      }
+    }
+
+    window.onload = () => {
+      document.getElementById("fileInput").addEventListener("change", handleUpload);
+      loadFileList();
+    };
+  </script>
+  <style>
+    body { font-family: Arial; padding: 40px; background: #f0f0f0; }
+    .file-link { color: #007BFF; text-decoration: none; }
+    .file-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h2>Upload a File to Firebase</h2>
+  <input type="file" id="fileInput" />
+  <h3>Available Files:</h3>
+  <div id="files">Loading...</div>
+</body>
+</html>

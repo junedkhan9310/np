@@ -53,26 +53,53 @@
       font-size: 1.1rem;
       text-align: center;
     }
+
+    .counter {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #ccc;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
   <div class="grid-container">
     <div class="notepad">
       <div class="notepad-title">Notebook 1</div>
-      <textarea placeholder="Write here..."></textarea>
+      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
+      <div class="counter">Words: 0 | Characters: 0</div>
     </div>
+
     <div class="notepad">
       <div class="notepad-title">Notebook 2</div>
-      <textarea placeholder="Write here..."></textarea>
+      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
+      <div class="counter">Words: 0 | Characters: 0</div>
     </div>
+
     <div class="notepad">
       <div class="notepad-title">Notebook 3</div>
-      <textarea placeholder="Write here..."></textarea>
+      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
+      <div class="counter">Words: 0 | Characters: 0</div>
     </div>
+
     <div class="notepad">
       <div class="notepad-title">Notebook 4</div>
-      <textarea placeholder="Write here..."></textarea>
+      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
+      <div class="counter">Words: 0 | Characters: 0</div>
     </div>
   </div>
+
+  <script>
+    function updateCount(textarea) {
+      const text = textarea.value.trim();
+
+      const wordCount = text === "" ? 0 : text.split(/\s+/).length;
+      const charCount = text.length;
+
+      const counter = textarea.nextElementSibling;
+      counter.textContent = `Words: ${wordCount} | Characters: ${charCount}`;
+    }
+  </script>
+
 </body>
 </html>
