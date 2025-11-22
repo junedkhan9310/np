@@ -2,19 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>4-Grid Notepad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced 4-Grid Notepad</title>
   <style>
+    :root {
+      --bg: #1e1e1e;
+      --pad-bg: #2c2c2c;
+      --text-bg: #111;
+      --text-color: #eee;
+      --border: #444;
+    }
+
+    body.light {
+      --bg: #f4f4f4;
+      --pad-bg: #fff;
+      --text-bg: #f9f9f9;
+      --text-color: #000;
+      --border: #ccc;
+    }
+
     body {
       margin: 0;
       padding: 0;
+      background: var(--bg);
+      color: var(--text-color);
       font-family: 'Segoe UI', sans-serif;
-      background: #1e1e1e;
-      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      transition: 0.3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      padding: 8px 14px;
+      background: var(--pad-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-color);
     }
 
     .grid-container {
@@ -27,8 +56,8 @@
     }
 
     .notepad {
-      background-color: #2c2c2c;
-      border: 1px solid #444;
+      background-color: var(--pad-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px;
       display: flex;
@@ -36,8 +65,8 @@
     }
 
     textarea {
-      background: #111;
-      color: #eee;
+      background: var(--text-bg);
+      color: var(--text-color);
       border: none;
       resize: none;
       flex: 1;
@@ -57,49 +86,130 @@
     .counter {
       margin-top: 8px;
       font-size: 0.85rem;
-      color: #ccc;
+      color: var(--text-color);
       text-align: right;
+      opacity: 0.8;
+    }
+
+    .clear-btn {
+      margin-top: 5px;
+      padding: 5px 10px;
+      background: #b44;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      align-self: flex-end;
+      font-size: 0.8rem;
+    }
+
+    .clear-btn:hover {
+      background: #d55;
     }
   </style>
 </head>
+
 <body>
+
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+
   <div class="grid-container">
     <div class="notepad">
       <div class="notepad-title">Notebook 1</div>
-      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
-      <div class="counter">Words: 0 | Characters: 0</div>
+      <textarea id="note1" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="counter"></div>
+      <button class="clear-btn" onclick="clearPad('note1', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 2</div>
-      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
-      <div class="counter">Words: 0 | Characters: 0</div>
+      <textarea id="note2" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="counter"></div>
+      <button class="clear-btn" onclick="clearPad('note2', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 3</div>
-      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
-      <div class="counter">Words: 0 | Characters: 0</div>
+      <textarea id="note3" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="counter"></div>
+      <button class="clear-btn" onclick="clearPad('note3', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 4</div>
-      <textarea placeholder="Write here..." oninput="updateCount(this)"></textarea>
-      <div class="counter">Words: 0 | Characters: 0</div>
+      <textarea id="note4" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="counter"></div>
+      <button class="clear-btn" onclick="clearPad('note4', this)">Clear</button>
     </div>
   </div>
 
-  <script>
-    function updateCount(textarea) {
-      const text = textarea.value.trim();
+<script>
+  // -------- WORD + CHAR + LINE COUNTER -------- //
+  function updateCount(textarea) {
+    const text = textarea.value;
 
-      const wordCount = text === "" ? 0 : text.split(/\s+/).length;
-      const charCount = text.length;
+    const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+    const charsWithSpaces = text.length;
+    const charsNoSpaces = text.replace(/\s+/g, "").length;
+    const lines = text.split(/\n/).length;
 
-      const counter = textarea.nextElementSibling;
-      counter.textContent = `Words: ${wordCount} | Characters: ${charCount}`;
+    const counter = textarea.parentElement.querySelector(".counter");
+    counter.textContent =
+      `Words: ${words} | ` +
+      `Chars: ${charsWithSpaces} (no spaces: ${charsNoSpaces}) | ` +
+      `Lines: ${lines}`;
+  }
+
+  // -------- SAVE TO LOCAL STORAGE -------- //
+  function saveNote() {
+    const notes = {
+      note1: document.getElementById("note1").value,
+      note2: document.getElementById("note2").value,
+      note3: document.getElementById("note3").value,
+      note4: document.getElementById("note4").value
+    };
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }
+
+  // -------- LOAD SAVED NOTES -------- //
+  function loadNotes() {
+    const saved = JSON.parse(localStorage.getItem("notes"));
+    if (!saved) return;
+
+    for (let i = 1; i <= 4; i++) {
+      const box = document.getElementById(`note${i}`);
+      if (saved[`note${i}`]) {
+        box.value = saved[`note${i}`];
+        updateCount(box);
+      }
     }
-  </script>
+  }
+
+  // -------- CLEAR PAD -------- //
+  function clearPad(id, button) {
+    document.getElementById(id).value = "";
+    updateCount(document.getElementById(id));
+    saveNote();
+  }
+
+  // -------- THEME TOGGLE -------- //
+  function toggleTheme() {
+    document.body.classList.toggle("light");
+    localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+  }
+
+  // -------- LOAD THEME ON START -------- //
+  function loadTheme() {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+      document.body.classList.add("light");
+    }
+  }
+
+  // -------- INITIAL LOAD -------- //
+  loadTheme();
+  loadNotes();
+</script>
 
 </body>
 </html>
