@@ -62,11 +62,9 @@
       padding: 10px;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
-    /* Editable "textarea-like" div that supports highlighting */
-    .editor {
+    textarea {
       background: var(--text-bg);
       color: var(--text-color);
       border: none;
@@ -74,18 +72,8 @@
       flex: 1;
       padding: 10px;
       font-size: 1rem;
-      font-family: 'Segoe UI', sans-serif;
       border-radius: 4px;
       outline: none;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .editor mark {
-      border-radius: 2px;
-      padding: 0 1px;
-      color: #111; /* keep highlighted text readable on bright marks */
     }
 
     .notepad-title {
@@ -118,61 +106,6 @@
     .clear-btn:hover {
       background: #d55;
     }
-
-    /* Highlight popup toolbar */
-    .highlight-toolbar {
-      position: fixed;
-      display: none;
-      background: #222;
-      border: 1px solid #555;
-      border-radius: 8px;
-      padding: 6px;
-      gap: 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      z-index: 1000;
-      align-items: center;
-    }
-
-    body.light .highlight-toolbar {
-      background: #fff;
-      border: 1px solid #ccc;
-    }
-
-    .highlight-toolbar.show {
-      display: flex;
-    }
-
-    .hl-swatch {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    body.light .hl-swatch {
-      border: 2px solid #333;
-    }
-
-    .hl-swatch:hover {
-      transform: scale(1.15);
-    }
-
-    .hl-clear {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid #999;
-      background: repeating-linear-gradient(45deg, #999, #999 2px, transparent 2px, transparent 5px);
-      cursor: pointer;
-      padding: 0;
-      position: relative;
-    }
-
-    .hl-clear:hover {
-      transform: scale(1.15);
-    }
   </style>
 </head>
 
@@ -180,281 +113,97 @@
 
   <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
 
-  <!-- Floating highlight toolbar, shared across all 4 pads -->
-  <div class="highlight-toolbar" id="hlToolbar">
-    <button class="hl-swatch" style="background:#fff59d" onclick="applyHighlight('#fff59d')" title="Yellow"></button>
-    <button class="hl-swatch" style="background:#a5d6a7" onclick="applyHighlight('#a5d6a7')" title="Green"></button>
-    <button class="hl-swatch" style="background:#90caf9" onclick="applyHighlight('#90caf9')" title="Blue"></button>
-    <button class="hl-clear" onclick="applyHighlight(null)" title="Clear highlight"></button>
-  </div>
-
   <div class="grid-container">
     <div class="notepad">
       <div class="notepad-title">Notebook 1</div>
-      <div class="editor" id="note1" contenteditable="true" data-placeholder="Write here..."></div>
+      <textarea id="note1" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
       <div class="counter"></div>
       <button class="clear-btn" onclick="clearPad('note1', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 2</div>
-      <div class="editor" id="note2" contenteditable="true" data-placeholder="Write here..."></div>
+      <textarea id="note2" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
       <div class="counter"></div>
       <button class="clear-btn" onclick="clearPad('note2', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 3</div>
-      <div class="editor" id="note3" contenteditable="true" data-placeholder="Write here..."></div>
+      <textarea id="note3" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
       <div class="counter"></div>
       <button class="clear-btn" onclick="clearPad('note3', this)">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 4</div>
-      <div class="editor" id="note4" contenteditable="true" data-placeholder="Write here..."></div>
+      <textarea id="note4" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
       <div class="counter"></div>
       <button class="clear-btn" onclick="clearPad('note4', this)">Clear</button>
     </div>
   </div>
 
 <script>
-  // -------- IN-MEMORY STORE (replaces localStorage; artifacts don't support browser storage) -------- //
-  const memoryStore = {
-    notes: { note1: "", note2: "", note3: "", note4: "" },
-    theme: "dark"
-  };
-
   // -------- WORD + CHAR + LINE COUNTER -------- //
-  function getPlainText(editor) {
-    // innerText respects visual line breaks; good enough for word/line counting
-    return editor.innerText || "";
-  }
-
-  function updateCount(editor) {
-    const text = getPlainText(editor);
+  function updateCount(textarea) {
+    const text = textarea.value;
 
     const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
     const charsWithSpaces = text.length;
     const charsNoSpaces = text.replace(/\s+/g, "").length;
     const lines = text.split(/\n/).length;
 
-    const counter = editor.parentElement.querySelector(".counter");
+    const counter = textarea.parentElement.querySelector(".counter");
     counter.textContent =
       `Words: ${words} | ` +
       `Chars: ${charsWithSpaces} (no spaces: ${charsNoSpaces}) | ` +
       `Lines: ${lines}`;
   }
 
-  // -------- SAVE TO MEMORY -------- //
+  // -------- SAVE TO LOCAL STORAGE -------- //
   function saveNote() {
-    for (let i = 1; i <= 4; i++) {
-      const el = document.getElementById(`note${i}`);
-      memoryStore.notes[`note${i}`] = el.innerHTML;
-    }
+    const notes = {
+      note1: document.getElementById("note1").value,
+      note2: document.getElementById("note2").value,
+      note3: document.getElementById("note3").value,
+      note4: document.getElementById("note4").value
+    };
+    localStorage.setItem("notes", JSON.stringify(notes));
   }
 
   // -------- LOAD SAVED NOTES -------- //
   function loadNotes() {
+    const saved = JSON.parse(localStorage.getItem("notes"));
+    if (!saved) return;
+
     for (let i = 1; i <= 4; i++) {
       const box = document.getElementById(`note${i}`);
-      const saved = memoryStore.notes[`note${i}`];
-      if (saved) {
-        box.innerHTML = saved;
+      if (saved[`note${i}`]) {
+        box.value = saved[`note${i}`];
+        updateCount(box);
       }
-      updateCount(box);
-      updatePlaceholderState(box);
-    }
-  }
-
-  // -------- PLACEHOLDER HANDLING (contenteditable has no native placeholder) -------- //
-  function updatePlaceholderState(editor) {
-    const isEmpty = editor.innerText.trim() === "";
-    if (isEmpty) {
-      editor.classList.add("empty");
-      if (!editor.dataset.placeholderShown) {
-        editor.dataset.placeholderShown = "1";
-      }
-    } else {
-      editor.classList.remove("empty");
     }
   }
 
   // -------- CLEAR PAD -------- //
   function clearPad(id, button) {
-    const editor = document.getElementById(id);
-    editor.innerHTML = "";
-    updateCount(editor);
-    updatePlaceholderState(editor);
+    document.getElementById(id).value = "";
+    updateCount(document.getElementById(id));
     saveNote();
   }
 
   // -------- THEME TOGGLE -------- //
   function toggleTheme() {
     document.body.classList.toggle("light");
-    memoryStore.theme = document.body.classList.contains("light") ? "light" : "dark";
+    localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
   }
 
+  // -------- LOAD THEME ON START -------- //
   function loadTheme() {
-    if (memoryStore.theme === "light") {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
       document.body.classList.add("light");
     }
-  }
-
-  // -------- HIGHLIGHT TOOLBAR LOGIC (grid pads only) -------- //
-  const hlToolbar = document.getElementById("hlToolbar");
-  let activeEditor = null;
-  let savedRange = null;
-
-  function showToolbarForSelection(editor, range) {
-    activeEditor = editor;
-    savedRange = range.cloneRange();
-
-    const rect = range.getBoundingClientRect();
-    const toolbarWidth = 130; // approx width incl. gaps/padding
-
-    let left = rect.left + (rect.width / 2) - (toolbarWidth / 2);
-    left = Math.max(8, Math.min(left, window.innerWidth - toolbarWidth - 8));
-
-    let top = rect.top - 44; // place above selection
-    if (top < 8) top = rect.bottom + 10; // flip below if no room above
-
-    hlToolbar.style.left = `${left}px`;
-    hlToolbar.style.top = `${top}px`;
-    hlToolbar.classList.add("show");
-  }
-
-  function hideToolbar() {
-    hlToolbar.classList.remove("show");
-    activeEditor = null;
-    savedRange = null;
-  }
-
-  function handleSelectionChange(editor) {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-      // Only hide if the collapse happened inside this editor context;
-      // clicking the toolbar itself shouldn't hide prematurely.
-      return;
-    }
-    const range = sel.getRangeAt(0);
-    if (!editor.contains(range.commonAncestorContainer)) return;
-
-    showToolbarForSelection(editor, range);
-  }
-
-  document.querySelectorAll(".editor").forEach((editor) => {
-    editor.addEventListener("mouseup", () => handleSelectionChange(editor));
-    editor.addEventListener("keyup", (e) => {
-      // Update selection-based toolbar on shift+arrow selections too
-      if (e.shiftKey) handleSelectionChange(editor);
-      updateCount(editor);
-      updatePlaceholderState(editor);
-      saveNote();
-    });
-    editor.addEventListener("input", () => {
-      updateCount(editor);
-      updatePlaceholderState(editor);
-      saveNote();
-    });
-    editor.addEventListener("blur", () => {
-      // Delay so a click on the toolbar isn't cancelled by blur
-      setTimeout(() => {
-        if (document.activeElement !== editor && !hlToolbar.contains(document.activeElement)) {
-          // keep toolbar open only if user is interacting with it
-        }
-      }, 100);
-    });
-  });
-
-  // Hide toolbar when clicking elsewhere (but not on the toolbar itself)
-  document.addEventListener("mousedown", (e) => {
-    if (!hlToolbar.contains(e.target) && !e.target.closest(".editor")) {
-      hideToolbar();
-    }
-  });
-
-  document.addEventListener("mouseup", (e) => {
-    // If click lands outside any editor and outside toolbar, and there's no selection, hide
-    setTimeout(() => {
-      const sel = window.getSelection();
-      const hasSelection = sel && !sel.isCollapsed && sel.toString().length > 0;
-      if (!hasSelection && !hlToolbar.contains(e.target)) {
-        hideToolbar();
-      }
-    }, 0);
-  });
-
-  function applyHighlight(color) {
-    if (!activeEditor || !savedRange) return;
-
-    // Restore the selection so execCommand-free manual wrapping works
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(savedRange);
-
-    if (color === null) {
-      // Clear highlight: unwrap any <mark> elements intersecting the selection
-      clearHighlightInRange(savedRange);
-    } else {
-      wrapSelectionWithMark(savedRange, color);
-    }
-
-    updateCount(activeEditor);
-    saveNote();
-    hideToolbar();
-
-    // Deselect after applying
-    window.getSelection().removeAllRanges();
-  }
-
-  function wrapSelectionWithMark(range, color) {
-    // First, clear any existing marks in range to avoid nested marks
-    clearHighlightInRange(range);
-
-    // Re-fetch a fresh range since DOM may have changed
-    const mark = document.createElement("mark");
-    mark.style.backgroundColor = color;
-    try {
-      range.surroundContents(mark);
-    } catch (err) {
-      // surroundContents fails on partial node selections (multi-element ranges).
-      // Fallback: extract contents and wrap manually.
-      const frag = range.extractContents();
-      mark.appendChild(frag);
-      range.insertNode(mark);
-    }
-  }
-
-  function clearHighlightInRange(range) {
-    // Find all <mark> elements that intersect the range within the active editor
-    const editor = activeEditor;
-    if (!editor) return;
-
-    const marks = editor.querySelectorAll("mark");
-    marks.forEach((mark) => {
-      if (rangeIntersectsNode(range, mark)) {
-        unwrapMark(mark);
-      }
-    });
-  }
-
-  function rangeIntersectsNode(range, node) {
-    const nodeRange = document.createRange();
-    nodeRange.selectNodeContents(node);
-    return (
-      range.compareBoundaryPoints(Range.END_TO_START, nodeRange) < 0 &&
-      range.compareBoundaryPoints(Range.START_TO_END, nodeRange) > 0
-    );
-  }
-
-  function unwrapMark(mark) {
-    const parent = mark.parentNode;
-    while (mark.firstChild) {
-      parent.insertBefore(mark.firstChild, mark);
-    }
-    parent.removeChild(mark);
-    parent.normalize();
   }
 
   // -------- INITIAL LOAD -------- //
