@@ -62,9 +62,10 @@
       padding: 10px;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
-    textarea {
+    .note-editor {
       background: var(--text-bg);
       color: var(--text-color);
       border: none;
@@ -74,6 +75,16 @@
       font-size: 1rem;
       border-radius: 4px;
       outline: none;
+      white-space: pre-wrap;
+      overflow: auto;
+      min-height: 120px;
+      line-height: 1.5;
+    }
+
+    .note-editor:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(255, 255, 255, 0.45);
+      pointer-events: none;
     }
 
     .notepad-title {
@@ -106,6 +117,54 @@
     .clear-btn:hover {
       background: #d55;
     }
+
+    .highlight-toolbar {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(20, 20, 20, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      transform: translateY(-12px);
+    }
+
+    .highlight-toolbar.visible {
+      display: flex;
+    }
+
+    .highlight-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .highlight-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .highlight-btn.clear {
+      width: auto;
+      height: auto;
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #444;
+      font-size: 0.72rem;
+    }
+
+    .note-editor mark {
+      padding: 0 2px;
+      border-radius: 3px;
+      color: rgba(0, 0, 0, 0.8);
+    }
   </style>
 </head>
 
@@ -116,62 +175,67 @@
   <div class="grid-container">
     <div class="notepad">
       <div class="notepad-title">Notebook 1</div>
-      <textarea id="note1" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="note-editor" id="note1" data-placeholder="Write here..." contenteditable="true"></div>
       <div class="counter"></div>
-      <button class="clear-btn" onclick="clearPad('note1', this)">Clear</button>
+      <button class="clear-btn" onclick="clearPad('note1')">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 2</div>
-      <textarea id="note2" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="note-editor" id="note2" data-placeholder="Write here..." contenteditable="true"></div>
       <div class="counter"></div>
-      <button class="clear-btn" onclick="clearPad('note2', this)">Clear</button>
+      <button class="clear-btn" onclick="clearPad('note2')">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 3</div>
-      <textarea id="note3" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="note-editor" id="note3" data-placeholder="Write here..." contenteditable="true"></div>
       <div class="counter"></div>
-      <button class="clear-btn" onclick="clearPad('note3', this)">Clear</button>
+      <button class="clear-btn" onclick="clearPad('note3')">Clear</button>
     </div>
 
     <div class="notepad">
       <div class="notepad-title">Notebook 4</div>
-      <textarea id="note4" placeholder="Write here..." oninput="updateCount(this); saveNote()"></textarea>
+      <div class="note-editor" id="note4" data-placeholder="Write here..." contenteditable="true"></div>
       <div class="counter"></div>
-      <button class="clear-btn" onclick="clearPad('note4', this)">Clear</button>
+      <button class="clear-btn" onclick="clearPad('note4')">Clear</button>
     </div>
   </div>
 
-<script>
-  // -------- WORD + CHAR + LINE COUNTER -------- //
-  function updateCount(textarea) {
-    const text = textarea.value;
+  <div id="highlightToolbar" class="highlight-toolbar" aria-label="Highlight text">
+    <button class="highlight-btn" type="button" data-color="#ffe066" style="background:#ffe066" title="Yellow highlight"></button>
+    <button class="highlight-btn" type="button" data-color="#7ae582" style="background:#7ae582" title="Green highlight"></button>
+    <button class="highlight-btn" type="button" data-color="#ffb3c1" style="background:#ffb3c1" title="Pink highlight"></button>
+    <button class="highlight-btn clear" type="button" data-clear="true" title="Clear highlight">Clear</button>
+  </div>
 
+<script>
+  const highlightToolbar = document.getElementById("highlightToolbar");
+
+  function updateCount(editor) {
+    const text = editor.textContent || "";
     const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
     const charsWithSpaces = text.length;
     const charsNoSpaces = text.replace(/\s+/g, "").length;
     const lines = text.split(/\n/).length;
 
-    const counter = textarea.parentElement.querySelector(".counter");
+    const counter = editor.parentElement.querySelector(".counter");
     counter.textContent =
       `Words: ${words} | ` +
       `Chars: ${charsWithSpaces} (no spaces: ${charsNoSpaces}) | ` +
       `Lines: ${lines}`;
   }
 
-  // -------- SAVE TO LOCAL STORAGE -------- //
   function saveNote() {
     const notes = {
-      note1: document.getElementById("note1").value,
-      note2: document.getElementById("note2").value,
-      note3: document.getElementById("note3").value,
-      note4: document.getElementById("note4").value
+      note1: document.getElementById("note1").innerHTML,
+      note2: document.getElementById("note2").innerHTML,
+      note3: document.getElementById("note3").innerHTML,
+      note4: document.getElementById("note4").innerHTML
     };
     localStorage.setItem("notes", JSON.stringify(notes));
   }
 
-  // -------- LOAD SAVED NOTES -------- //
   function loadNotes() {
     const saved = JSON.parse(localStorage.getItem("notes"));
     if (!saved) return;
@@ -179,26 +243,25 @@
     for (let i = 1; i <= 4; i++) {
       const box = document.getElementById(`note${i}`);
       if (saved[`note${i}`]) {
-        box.value = saved[`note${i}`];
+        box.innerHTML = saved[`note${i}`];
         updateCount(box);
       }
     }
   }
 
-  // -------- CLEAR PAD -------- //
-  function clearPad(id, button) {
-    document.getElementById(id).value = "";
-    updateCount(document.getElementById(id));
+  function clearPad(id) {
+    const editor = document.getElementById(id);
+    editor.innerHTML = "";
+    updateCount(editor);
     saveNote();
+    hideHighlightToolbar();
   }
 
-  // -------- THEME TOGGLE -------- //
   function toggleTheme() {
     document.body.classList.toggle("light");
     localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
   }
 
-  // -------- LOAD THEME ON START -------- //
   function loadTheme() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
@@ -206,9 +269,124 @@
     }
   }
 
-  // -------- INITIAL LOAD -------- //
+  function positionHighlightToolbar() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      hideHighlightToolbar();
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+
+    if (!rect.width && !rect.height) {
+      hideHighlightToolbar();
+      return;
+    }
+
+    highlightToolbar.style.left = `${rect.left + (rect.width / 2) - 80}px`;
+    highlightToolbar.style.top = `${window.scrollY + rect.top - 50}px`;
+    highlightToolbar.classList.add("visible");
+  }
+
+  function hideHighlightToolbar() {
+    highlightToolbar.classList.remove("visible");
+  }
+
+  function applyHighlight(color) {
+    document.execCommand("hiliteColor", false, color);
+    setTimeout(() => {
+      const activeEditor = document.activeElement;
+      if (activeEditor && activeEditor.classList.contains("note-editor")) {
+        updateCount(activeEditor);
+        saveNote();
+      }
+    }, 0);
+    positionHighlightToolbar();
+  }
+
+  function clearHighlight() {
+    document.execCommand("removeFormat", false, null);
+    setTimeout(() => {
+      const activeEditor = document.activeElement;
+      if (activeEditor && activeEditor.classList.contains("note-editor")) {
+        updateCount(activeEditor);
+        saveNote();
+      }
+    }, 0);
+    hideHighlightToolbar();
+  }
+
+  document.addEventListener("selectionchange", function () {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      hideHighlightToolbar();
+      return;
+    }
+
+    const activeElement = selection.anchorNode && selection.anchorNode.parentElement;
+    if (activeElement && activeElement.classList.contains("note-editor")) {
+      positionHighlightToolbar();
+    } else {
+      hideHighlightToolbar();
+    }
+  });
+
+  document.addEventListener("mouseup", function () {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+      hideHighlightToolbar();
+      return;
+    }
+
+    const activeElement = selection.anchorNode && selection.anchorNode.parentElement;
+    if (activeElement && activeElement.classList.contains("note-editor")) {
+      positionHighlightToolbar();
+    }
+  });
+
+  document.addEventListener("keyup", function () {
+    const selection = window.getSelection();
+    const activeElement = document.activeElement;
+    if (selection && !selection.isCollapsed && activeElement && activeElement.classList.contains("note-editor")) {
+      positionHighlightToolbar();
+    }
+  });
+
+  document.querySelectorAll(".highlight-btn").forEach((button) => {
+    button.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+    });
+
+    button.addEventListener("click", function () {
+      if (this.dataset.clear === "true") {
+        clearHighlight();
+      } else {
+        applyHighlight(this.dataset.color);
+      }
+    });
+  });
+
+  document.querySelectorAll(".note-editor").forEach((editor) => {
+    editor.addEventListener("input", function () {
+      updateCount(this);
+      saveNote();
+    });
+
+    editor.addEventListener("focus", function () {
+      if (window.getSelection() && !window.getSelection().isCollapsed) {
+        positionHighlightToolbar();
+      }
+    });
+
+    editor.addEventListener("blur", function () {
+      setTimeout(hideHighlightToolbar, 100);
+    });
+  });
+
   loadTheme();
   loadNotes();
+  document.querySelectorAll(".note-editor").forEach((editor) => updateCount(editor));
 </script>
 
 </body>
