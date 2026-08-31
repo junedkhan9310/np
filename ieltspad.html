@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Notepad</title>
+    <link rel="stylesheet" href="ieltspad.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <main class="ielts-shell">
+        <header class="page-header">
+            <div>
+                <a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left"></i> Home</a>
+                <p class="eyebrow">Writing practice workspace</p>
+                <h1>IELTS <span>Notepad</span></h1>
+                <p class="intro">Draft, compare, and polish two responses side by side.</p>
+            </div>
+            <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch to light mode" title="Switch theme">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </header>
+
+        <section class="workspace" aria-label="Two IELTS writing pads">
+            <article class="pad" data-pad="task-one">
+                <div class="pad-heading">
+                    <div>
+                        <p class="pad-kicker">Task 01</p>
+                        <h2>Essay draft</h2>
+                    </div>
+                    <button class="clear-all" type="button" title="Clear this pad">Clear pad</button>
+                </div>
+                <div class="toolbar" role="toolbar" aria-label="Essay draft highlight tools">
+                    <span>Highlight</span>
+                    <button class="swatch swatch-yellow" type="button" data-color="#ffe082" aria-label="Yellow highlight" title="Yellow highlight"></button>
+                    <button class="swatch swatch-mint" type="button" data-color="#a7f3d0" aria-label="Mint highlight" title="Mint highlight"></button>
+                    <button class="swatch swatch-blue" type="button" data-color="#bfdbfe" aria-label="Blue highlight" title="Blue highlight"></button>
+                    <button class="swatch swatch-pink" type="button" data-color="#fbcfe8" aria-label="Pink highlight" title="Pink highlight"></button>
+                    <button class="clear-selection" type="button" title="Remove highlighting from selected text"><i class="fa-solid fa-eraser"></i> Clear selection</button>
+                </div>
+                <div class="editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Start your Task 1 response..."></div>
+                <footer class="pad-footer"><span class="word-count">0 words</span><span class="save-state">Saved locally</span></footer>
+            </article>
+
+            <article class="pad" data-pad="task-two">
+                <div class="pad-heading">
+                    <div>
+                        <p class="pad-kicker">Task 02</p>
+                        <h2>Speaking notes</h2>
+                    </div>
+                    <button class="clear-all" type="button" title="Clear this pad">Clear pad</button>
+                </div>
+                <div class="toolbar" role="toolbar" aria-label="Speaking notes highlight tools">
+                    <span>Highlight</span>
+                    <button class="swatch swatch-yellow" type="button" data-color="#ffe082" aria-label="Yellow highlight" title="Yellow highlight"></button>
+                    <button class="swatch swatch-mint" type="button" data-color="#a7f3d0" aria-label="Mint highlight" title="Mint highlight"></button>
+                    <button class="swatch swatch-blue" type="button" data-color="#bfdbfe" aria-label="Blue highlight" title="Blue highlight"></button>
+                    <button class="swatch swatch-pink" type="button" data-color="#fbcfe8" aria-label="Pink highlight" title="Pink highlight"></button>
+                    <button class="clear-selection" type="button" title="Remove highlighting from selected text"><i class="fa-solid fa-eraser"></i> Clear selection</button>
+                </div>
+                <div class="editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Capture ideas for Part 2 and Part 3..."></div>
+                <footer class="pad-footer"><span class="word-count">0 words</span><span class="save-state">Saved locally</span></footer>
+            </article>
+        </section>
+    </main>
+    <script src="ieltspad.js"></script>
+</body>
+
+</html>
